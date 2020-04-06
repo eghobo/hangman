@@ -1,0 +1,112 @@
+---
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Hangman API
+host: localhost:4567
+basePath: "/hangman/api/v1"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /games:
+    post:
+      summary: "Start new game"
+      responses:
+        201:
+          description: "Game Started"
+          headers:
+            Location:
+              schema:
+                type: string
+                description: "Request limit per hour."
+  /games/{uuid}:
+    get:
+      summary: "Find Game by UUID"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "uuid"
+          in: path
+          description: "Game UUID"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Game Details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: "Game with specified UUID was not found."
+    delete:
+      summary: "Stop Game by UUID"
+      parameters:
+        - name: "uuid"
+          in: path
+          description: "Game UUID"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Game Stopped"
+        404:
+          description: "Game with specified UUID was not found."
+    patch:
+      summary: "Turn"
+      parameters:
+        - name: "uuid"
+          in: path
+          description: "Game UUID"
+          required: true
+          type: string
+      requestBody:
+        description: "Player guess"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+                properties:
+                  letter:
+                    type: string
+                    minLength: 3
+                    maxLength: 20
+                    pattern: '^[a-zA-Z]$'
+      responses:
+        200:
+          description: "No matches found"
+        201:
+          description: "Matches found"
+        412:
+          description: "Word is fully revealed or you out of turns"
+        424:
+          description: "In incorrect guessing input"
+
+components:
+  schemas:
+    Game:
+      properties:
+        uuid:
+          type: string
+          description: "Game UUID"
+        revealed:
+          type: boolean
+          description: "Indicate if world is fully revealed"
+        guesses_left:
+          type: integer
+          description: "Number of guesses left"
+        guesses:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: object
+                properties:
+                  guess:
+                    type: string
+                  found_indexes:
+                    type: array
+                    items:
+                      type: integer
